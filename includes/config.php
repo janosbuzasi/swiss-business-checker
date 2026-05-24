@@ -20,7 +20,7 @@ return [
     'urls' => [
         'nic_lookup' => 'https://www.nic.ch/whois/',
         'swissreg_trademarks' => 'https://www.swissreg.ch/database-client/search/query/trademarks',
-        'zefix_search' => 'https://www.zefix.ch/en/search/entity/list',
+        'zefix_search' => '$zefix_url = "https://www.zefix.admin.ch/de/search/entity/welcome";',
         'zefix_api_docs' => 'https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html',
     ],
 
