@@ -30,7 +30,7 @@ if (isset($_GET['api']) && $_GET['api'] === '1') {
         <form class="checker-form" method="get" action="">
             <label for="name">Business name candidate</label>
             <div class="input-row">
-                <input id="name" name="name" type="text" maxlength="120" placeholder="e.g. werkmacher" value="<?= sbc_h($query) ?>" required>
+                <input id="name" name="name" type="text" maxlength="120" placeholder="e.g. elefanten" value="<?= sbc_h($query) ?>" required>
                 <button type="submit">Check</button>
             </div>
         </form>
