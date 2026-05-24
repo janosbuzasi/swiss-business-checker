@@ -71,7 +71,7 @@ if (isset($_GET['api']) && $_GET['api'] === '1') {
                     <h2>ZEFIX company register</h2>
                     <p>Search the Swiss central business name index for existing companies.</p>
                     <p class="status manual">Manual check</p>
-                    <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['zefix']['search_url']) ?>">Open ZEFIX search</a>
+                    <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['zefix']['search_url']) ?>">Open ZEFIX official search</a>
                 </article>
             </section>
 
