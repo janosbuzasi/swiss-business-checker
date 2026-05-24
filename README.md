@@ -107,9 +107,9 @@ Example response:
     },
     "zefix": {
         "status": "manual-check",
-        "search_url": "https://www.zefix.ch/en/search/entity/list?searchType=exact&search=elefanten",
+        "search_url": "https://www.zefix.admin.ch/de/search/entity/welcome",
         "api_docs_url": "https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html",
-        "note": "ZEFIX official search/API should be checked manually or integrated with credentials in a later version."
+        "note": "ZEFIX should be checked manually via the official search page. PublicREST integration can be added in a later version."
     },
     "score": 100,
     "disclaimer": "This tool is an initial technical/name research helper, not legal advice."
@@ -158,7 +158,15 @@ Possible V2:
 
 - nic.ch domain lookup: https://www.nic.ch/whois/
 - Swissreg trade mark database: https://www.swissreg.ch/database-client/search/query/trademarks
+- ZEFIX official search: https://www.zefix.admin.ch/de/search/entity/welcome
 - ZEFIX PublicREST API documentation: https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html
+
+## Changelog
+
+### v1.0.1
+
+- Changed ZEFIX link to the stable official entry page.
+- Changed default examples to `elefanten`.
 
 ## License
 
