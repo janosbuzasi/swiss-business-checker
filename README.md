@@ -4,7 +4,7 @@ A lightweight PHP tool to check Swiss business name candidates against:
 
 - `.ch` domain availability hints
 - Swissreg trade mark search
-- ZEFIX company register search
+- live ZEFIX PublicREST company register results
 - JSON API output
 
 The project is intentionally simple and runs on basic PHP web hosting. No database required.
@@ -14,8 +14,9 @@ The project is intentionally simple and runs on basic PHP web hosting. No databa
 - Clean responsive UI
 - PHP-only implementation
 - DNS-based `.ch` domain hint
-- Official Swissreg search link
-- Official ZEFIX search link
+- Official Swissreg manual search link
+- Live ZEFIX PublicREST integration via server-side PHP
+- ZEFIX manual fallback link with query
 - JSON API endpoint
 - MIT licensed
 
@@ -25,13 +26,46 @@ This tool is an initial research helper, not legal advice.
 
 The `.ch` domain check is only a DNS-based hint. Final domain availability must be checked through nic.ch or an accredited registrar.
 
-Swissreg and ZEFIX are linked as official manual checks in V1. Similar trade marks, name conflicts, protected terms, cantonal/legal restrictions and industry-specific requirements may still apply.
+ZEFIX live results are technical API results from the central business name index. Final legally relevant decisions still require official verification.
+
+Swissreg remains a manual trade mark check in V2. Similar trade marks, name conflicts, protected terms, cantonal/legal restrictions and industry-specific requirements may still apply.
 
 ## Requirements
 
 - PHP 8.0 or newer recommended
 - Web server such as Apache, Nginx or PHP built-in server
+- PHP cURL recommended for ZEFIX API calls
 - DNS functions enabled in PHP for domain hints
+
+## Optional ZEFIX API credentials
+
+The app calls:
+
+```text
+https://www.zefix.admin.ch/ZefixPublicREST/api/v1/company/search
+```
+
+with a JSON POST body such as:
+
+```json
+{
+  "name": "elefanten",
+  "activeOnly": true
+}
+```
+
+Some environments may require Basic Auth credentials for the official API. Configure them as environment variables:
+
+```bash
+export ZEFIX_API_USERNAME="your-user"
+export ZEFIX_API_PASSWORD="your-password"
+```
+
+You can disable the live API and keep manual ZEFIX links only:
+
+```bash
+export ZEFIX_API_ENABLED=false
+```
 
 ## Installation
 
@@ -66,9 +100,10 @@ The tool returns:
 
 - Normalized `.ch` domain candidate
 - DNS availability hint
-- Swissreg search link
-- ZEFIX search link
-- Conservative V1 score
+- Swissreg search button
+- Live ZEFIX API match count and result list when available
+- ZEFIX manual fallback button
+- Candidate score
 - JSON API URL
 
 ## JSON API
@@ -85,34 +120,42 @@ Alternative via `index.php`:
 /index.php?api=1&name=elefanten
 ```
 
-Example response:
+Example response shape:
 
 ```json
 {
-    "ok": true,
-    "query": "elefanten",
-    "normalized_domain_label": "elefanten",
-    "domain": {
-        "domain": "elefanten.ch",
-        "mode": "dns-hint",
-        "has_dns_records": false,
-        "available_hint": true,
-        "status": "possibly-available",
-        "note": "DNS lookup is only a hint. Final availability must be checked with nic.ch or a registrar."
-    },
-    "swissreg": {
-        "status": "manual-check",
-        "search_url": "https://www.swissreg.ch/database-client/search/query/trademarks?queryString=elefanten",
-        "note": "Swissreg should be checked manually. Similar trade marks may still create conflicts."
-    },
-    "zefix": {
-        "status": "manual-check",
-        "search_url": "https://www.zefix.admin.ch/de/search/entity/welcome",
-        "api_docs_url": "https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html",
-        "note": "ZEFIX should be checked manually via the official search page. PublicREST integration can be added in a later version."
-    },
-    "score": 100,
-    "disclaimer": "This tool is an initial technical/name research helper, not legal advice."
+  "ok": true,
+  "version": "2.0.0",
+  "query": "elefanten",
+  "normalized_domain_label": "elefanten",
+  "domain": {
+    "domain": "elefanten.ch",
+    "mode": "dns-hint",
+    "has_dns_records": false,
+    "available_hint": true,
+    "status": "possibly-available"
+  },
+  "swissreg": {
+    "status": "manual-check",
+    "search_url": "https://www.swissreg.ch/database-client/search/query/trademarks"
+  },
+  "zefix": {
+    "status": "live-api",
+    "success": true,
+    "matches": 3,
+    "results": [
+      {
+        "name": "Elefanten Holding AG",
+        "uid": "CHE...",
+        "legal_seat": "Sarnen",
+        "canton": "OW",
+        "status": "ACTIVE",
+        "legal_form": "Limited"
+      }
+    ]
+  },
+  "score": 75,
+  "disclaimer": "This tool is an initial technical/name research helper, not legal advice."
 }
 ```
 
@@ -124,7 +167,8 @@ swiss-business-checker/
 ├── api.php
 ├── includes/
 │   ├── config.php
-│   └── functions.php
+│   ├── functions.php
+│   └── providers.php
 ├── assets/
 │   ├── css/style.css
 │   └── js/script.js
@@ -136,20 +180,21 @@ swiss-business-checker/
 
 ## Roadmap
 
-V1:
+V2:
 
 - [x] `.ch` DNS hint
-- [x] Swissreg official search link
-- [x] ZEFIX official search link
+- [x] Swissreg official manual search link
+- [x] ZEFIX PublicREST API integration
+- [x] ZEFIX manual fallback link
 - [x] JSON API
 - [x] No database
 
-Possible V2:
+Possible future improvements:
 
-- [ ] Optional ZEFIX PublicREST integration
 - [ ] Multi-TLD checks: `.ch`, `.com`, `.swiss`, `.io`
 - [ ] Better IDN handling
 - [ ] Configurable scoring
+- [ ] Optional Swissreg API integration after API access/terms setup
 - [ ] Dockerfile
 - [ ] GitHub Actions PHP linting
 - [ ] Screenshots and demo page
@@ -160,8 +205,17 @@ Possible V2:
 - Swissreg trade mark database: https://www.swissreg.ch/database-client/search/query/trademarks
 - ZEFIX official search: https://www.zefix.admin.ch/de/search/entity/welcome
 - ZEFIX PublicREST API documentation: https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html
+- ZEFIX OpenAPI JSON: https://www.zefix.admin.ch/ZefixPublicREST/v3/api-docs
 
 ## Changelog
+
+### v2.0.0
+
+- Added server-side ZEFIX PublicREST company search integration.
+- Added live ZEFIX result cards in the UI.
+- Added optional Basic Auth support via environment variables.
+- Kept Swissreg as a stable official manual check.
+- Updated scoring for live ZEFIX matches.
 
 ### v1.0.1
 
