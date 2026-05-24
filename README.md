@@ -59,7 +59,7 @@ http://localhost:8080
 Open the web UI and enter a business name candidate, for example:
 
 ```text
-werkmacher
+elefanten
 ```
 
 The tool returns:
@@ -76,13 +76,13 @@ The tool returns:
 Dedicated API endpoint:
 
 ```text
-/api.php?name=werkmacher
+/api.php?name=elefanten
 ```
 
 Alternative via `index.php`:
 
 ```text
-/index.php?api=1&name=werkmacher
+/index.php?api=1&name=elefanten
 ```
 
 Example response:
@@ -90,10 +90,10 @@ Example response:
 ```json
 {
     "ok": true,
-    "query": "werkmacher",
-    "normalized_domain_label": "werkmacher",
+    "query": "elefanten",
+    "normalized_domain_label": "elefanten",
     "domain": {
-        "domain": "werkmacher.ch",
+        "domain": "elefanten.ch",
         "mode": "dns-hint",
         "has_dns_records": false,
         "available_hint": true,
@@ -102,12 +102,12 @@ Example response:
     },
     "swissreg": {
         "status": "manual-check",
-        "search_url": "https://www.swissreg.ch/database-client/search/query/trademarks?queryString=werkmacher",
+        "search_url": "https://www.swissreg.ch/database-client/search/query/trademarks?queryString=elefanten",
         "note": "Swissreg should be checked manually. Similar trade marks may still create conflicts."
     },
     "zefix": {
         "status": "manual-check",
-        "search_url": "https://www.zefix.ch/en/search/entity/list?searchType=exact&search=werkmacher",
+        "search_url": "https://www.zefix.ch/en/search/entity/list?searchType=exact&search=elefanten",
         "api_docs_url": "https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html",
         "note": "ZEFIX official search/API should be checked manually or integrated with credentials in a later version."
     },
