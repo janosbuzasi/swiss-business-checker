@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 return [
     'app_name' => 'Swiss Business Checker',
-    'app_version' => '1.0.0',
+    'app_version' => '1.0.1',
 
     // Supported domain suffixes for quick DNS hints.
     // .ch is the default Swiss business use case.
@@ -20,7 +20,7 @@ return [
     'urls' => [
         'nic_lookup' => 'https://www.nic.ch/whois/',
         'swissreg_trademarks' => 'https://www.swissreg.ch/database-client/search/query/trademarks',
-        'zefix_search' => '$zefix_url = "https://www.zefix.admin.ch/de/search/entity/welcome";',
+        'zefix_search' => 'https://www.zefix.admin.ch/de/search/entity/welcome',
         'zefix_api_docs' => 'https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html',
     ],
 
