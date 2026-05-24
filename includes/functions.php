@@ -67,7 +67,8 @@ function sbc_build_search_urls(string $query, array $config): array
     return [
         'nic_lookup' => $config['urls']['nic_lookup'],
         'swissreg' => $config['urls']['swissreg_trademarks'] . '?queryString=' . $encoded,
-        'zefix' => $config['urls']['zefix_search'] . '?searchType=exact&search=' . $encoded,
+        // ZEFIX web UI is more stable as official entry page; query deep-links can fail due to UI/session state.
+        'zefix' => $config['urls']['zefix_search'],
         'zefix_api_docs' => $config['urls']['zefix_api_docs'],
     ];
 }
@@ -116,7 +117,7 @@ function sbc_check_business_name(string $input): array
             'status' => 'manual-check',
             'search_url' => $urls['zefix'],
             'api_docs_url' => $urls['zefix_api_docs'],
-            'note' => 'ZEFIX official search/API should be checked manually or integrated with credentials in a later version.',
+            'note' => 'ZEFIX should be checked manually via the official search page. PublicREST integration can be added in a later version.',
         ],
         'official_links' => $urls,
         'score' => sbc_score($domainHint),
