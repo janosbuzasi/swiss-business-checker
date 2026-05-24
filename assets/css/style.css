@@ -154,3 +154,58 @@ button:hover, .button-link:hover { background: var(--accent-dark); }
     }
     .input-row { gap: 12px; }
 }
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.result-list {
+    display: grid;
+    gap: 12px;
+}
+
+.company-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+}
+
+.company-row:first-child {
+    border-top: 0;
+}
+
+.company-row strong {
+    display: block;
+    font-size: 1.05rem;
+}
+
+.company-row p {
+    margin: 6px 0 0;
+    color: var(--muted);
+}
+
+.company-meta {
+    min-width: 160px;
+    text-align: right;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.warn-box {
+    border-left: 4px solid var(--warn);
+}
+
+@media (max-width: 720px) {
+    .company-row {
+        flex-direction: column;
+    }
+
+    .company-meta {
+        min-width: 0;
+        text-align: left;
+    }
+}
