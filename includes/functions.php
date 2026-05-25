@@ -61,6 +61,43 @@ function sbc_slugify_domain_label(string $input): string
     return sbc_substr($input, 0, 63);
 }
 
+function sbc_idn_domain_label(string $input): string
+{
+    $input = sbc_strtolower(trim($input));
+    $input = preg_replace('/\s+/u', '-', $input) ?? '';
+    $input = trim($input, '-');
+
+    if ($input === '' || !function_exists('idn_to_ascii')) {
+        return '';
+    }
+
+    $variant = defined('INTL_IDNA_VARIANT_UTS46') ? INTL_IDNA_VARIANT_UTS46 : 0;
+    $encoded = idn_to_ascii($input, IDNA_DEFAULT, $variant);
+    if (!is_string($encoded)) {
+        return '';
+    }
+
+    $encoded = sbc_strtolower($encoded);
+    if (!preg_match('/^[a-z0-9-]{1,63}$/', $encoded) || str_starts_with($encoded, '-') || str_ends_with($encoded, '-')) {
+        return '';
+    }
+
+    return $encoded;
+}
+
+function sbc_domain_candidates(string $query): array
+{
+    $labels = array_values(array_unique(array_filter([
+        sbc_slugify_domain_label($query),
+        sbc_idn_domain_label($query),
+    ])));
+
+    return array_map(
+        static fn (string $label): array => ['label' => $label, 'domain' => $label . '.ch'],
+        $labels
+    );
+}
+
 function sbc_domain_hint(string $domain): array
 {
     $hasDns = false;
@@ -79,6 +116,81 @@ function sbc_domain_hint(string $domain): array
         'status' => $hasDns ? 'possibly-registered-or-active' : 'possibly-available',
         'note' => 'DNS lookup is only a hint. Final availability must be checked with nic.ch or a registrar.',
     ];
+}
+
+function sbc_cache_key(string $query): string
+{
+    return hash('sha256', sbc_strtolower($query));
+}
+
+function sbc_cache_get(array $config, string $query): ?array
+{
+    $cache = $config['cache'] ?? [];
+    if (($cache['enabled'] ?? false) !== true) {
+        return null;
+    }
+
+    $file = rtrim((string) ($cache['directory'] ?? ''), '/\\') . '/' . sbc_cache_key($query) . '.json';
+    $ttl = (int) ($cache['ttl_seconds'] ?? 0);
+    if ($ttl <= 0 || !is_file($file) || filemtime($file) < time() - $ttl) {
+        return null;
+    }
+
+    $data = json_decode((string) @file_get_contents($file), true);
+    return is_array($data) ? $data : null;
+}
+
+function sbc_cache_set(array $config, string $query, array $payload): void
+{
+    $cache = $config['cache'] ?? [];
+    if (($cache['enabled'] ?? false) !== true) {
+        return;
+    }
+
+    $directory = rtrim((string) ($cache['directory'] ?? ''), '/\\');
+    if ($directory === '' || (!is_dir($directory) && !@mkdir($directory, 0775, true))) {
+        return;
+    }
+
+    $file = $directory . '/' . sbc_cache_key($query) . '.json';
+    @file_put_contents($file, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
+}
+
+function sbc_rate_limit_check(array $config, string $identifier): array
+{
+    $rateLimit = $config['rate_limit'] ?? [];
+    if (($rateLimit['enabled'] ?? false) !== true) {
+        return ['ok' => true];
+    }
+
+    $maxRequests = max(1, (int) ($rateLimit['max_requests'] ?? 30));
+    $windowSeconds = max(1, (int) ($rateLimit['window_seconds'] ?? 300));
+    $directory = rtrim((string) ($rateLimit['directory'] ?? ''), '/\\');
+    if ($directory === '' || (!is_dir($directory) && !@mkdir($directory, 0775, true))) {
+        return ['ok' => true];
+    }
+
+    $file = $directory . '/' . hash('sha256', $identifier) . '.json';
+    $now = time();
+    $hits = [];
+    if (is_file($file)) {
+        $decoded = json_decode((string) @file_get_contents($file), true);
+        if (is_array($decoded)) {
+            $hits = array_values(array_filter($decoded, static fn ($ts): bool => is_int($ts) && $ts > $now - $windowSeconds));
+        }
+    }
+
+    if (count($hits) >= $maxRequests) {
+        return [
+            'ok' => false,
+            'error' => 'Too many API requests. Please try again shortly.',
+            'retry_after_seconds' => max(1, ($hits[0] + $windowSeconds) - $now),
+        ];
+    }
+
+    $hits[] = $now;
+    @file_put_contents($file, json_encode($hits), LOCK_EX);
+    return ['ok' => true];
 }
 
 function sbc_build_search_urls(string $query, array $config): array
@@ -109,19 +221,26 @@ function sbc_score(array $domainHint, array $zefix): int
         } else {
             $score += 3;
         }
-    } else {
-        $score += 10; // official ZEFIX manual link still available
     }
 
-    $score += 15; // Swissreg manual official check available
+    $score += 5; // Swissreg manual link is helpful, but it is not an automated clearance check.
     return min(100, max(0, $score));
+}
+
+function sbc_confidence(array $zefix): string
+{
+    if (($zefix['success'] ?? false) === true) {
+        return 'medium';
+    }
+    return 'low';
 }
 
 function sbc_check_business_name(string $input): array
 {
     $config = sbc_load_config();
     $query = sbc_normalize_query($input);
-    $slug = sbc_slugify_domain_label($query);
+    $domainCandidates = sbc_domain_candidates($query);
+    $slug = (string) ($domainCandidates[0]['label'] ?? '');
 
     if ($query === '' || $slug === '') {
         return ['ok' => false, 'error' => 'Please enter a valid business name candidate.'];
@@ -131,11 +250,18 @@ function sbc_check_business_name(string $input): array
         return ['ok' => false, 'error' => 'Please enter at least 3 characters for ZEFIX search.'];
     }
 
-    $domainHint = sbc_domain_hint($slug . '.ch');
+    $cached = sbc_cache_get($config, $query);
+    if (is_array($cached)) {
+        $cached['cached'] = true;
+        return $cached;
+    }
+
+    $domainHint = sbc_domain_hint((string) $domainCandidates[0]['domain']);
+    $domainHint['candidates'] = $domainCandidates;
     $urls = sbc_build_search_urls($query, $config);
     $zefix = sbc_zefix_api_search($query, $config);
 
-    return [
+    $result = [
         'ok' => true,
         'version' => $config['app_version'],
         'query' => $query,
@@ -153,8 +279,13 @@ function sbc_check_business_name(string $input): array
         ]),
         'official_links' => $urls,
         'score' => sbc_score($domainHint, $zefix),
+        'confidence' => sbc_confidence($zefix),
+        'cached' => false,
         'disclaimer' => 'This tool is an initial technical/name research helper, not legal advice.',
     ];
+
+    sbc_cache_set($config, $query, $result);
+    return $result;
 }
 
 function sbc_json_response(array $payload, int $statusCode = 200): never

@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 return [
     'app_name' => 'Swiss Business Checker',
-    'app_version' => '2.0.0',
+    'app_version' => '2.1.0',
 
     'tlds' => ['ch'],
 
@@ -26,14 +26,31 @@ return [
 
     'domain_check_mode' => 'dns-hint',
 
-    // Optional ZEFIX API settings. Credentials can be injected via environment
-    // variables on hosts where Basic Auth credentials are required.
+    // Optional ZEFIX API settings. The official PublicREST API uses Basic Auth,
+    // so live checks are disabled unless credentials are configured or the
+    // feature is explicitly enabled.
     'zefix_api' => [
-        'enabled' => filter_var(getenv('ZEFIX_API_ENABLED') ?: 'true', FILTER_VALIDATE_BOOLEAN),
+        'enabled' => filter_var(
+            getenv('ZEFIX_API_ENABLED') ?: ((getenv('ZEFIX_API_USERNAME') && getenv('ZEFIX_API_PASSWORD')) ? 'true' : 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        ),
         'username' => getenv('ZEFIX_API_USERNAME') ?: '',
         'password' => getenv('ZEFIX_API_PASSWORD') ?: '',
         'timeout_seconds' => 6,
         'active_only' => true,
         'max_ui_results' => 10,
+    ],
+
+    'cache' => [
+        'enabled' => true,
+        'ttl_seconds' => 900,
+        'directory' => sys_get_temp_dir() . '/swiss-business-checker-cache',
+    ],
+
+    'rate_limit' => [
+        'enabled' => true,
+        'max_requests' => 30,
+        'window_seconds' => 300,
+        'directory' => sys_get_temp_dir() . '/swiss-business-checker-rate-limit',
     ],
 ];

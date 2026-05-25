@@ -18,6 +18,8 @@ The project is intentionally simple and runs on basic PHP web hosting. No databa
 - Live ZEFIX PublicREST integration via server-side PHP
 - ZEFIX manual fallback link with query
 - JSON API endpoint
+- Short-lived server-side response cache
+- Basic JSON API rate limiting
 - MIT licensed
 
 ## Important disclaimer
@@ -54,18 +56,21 @@ with a JSON POST body such as:
 }
 ```
 
-Some environments may require Basic Auth credentials for the official API. Configure them as environment variables:
+The official PublicREST API uses Basic Auth. Configure credentials as environment variables to enable live checks:
 
 ```bash
 export ZEFIX_API_USERNAME="your-user"
 export ZEFIX_API_PASSWORD="your-password"
 ```
 
-You can disable the live API and keep manual ZEFIX links only:
+You can explicitly enable or disable the live API:
 
 ```bash
+export ZEFIX_API_ENABLED=true
 export ZEFIX_API_ENABLED=false
 ```
+
+Without credentials, the app keeps working with manual ZEFIX links and does not attempt a live API request.
 
 ## Installation
 
@@ -104,6 +109,7 @@ The tool returns:
 - Live ZEFIX API match count and result list when available
 - ZEFIX manual fallback button
 - Candidate score
+- Confidence level for the automated checks
 - JSON API URL
 
 ## JSON API
@@ -125,7 +131,7 @@ Example response shape:
 ```json
 {
   "ok": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "query": "elefanten",
   "normalized_domain_label": "elefanten",
   "domain": {
@@ -155,6 +161,8 @@ Example response shape:
     ]
   },
   "score": 75,
+  "confidence": "medium",
+  "cached": false,
   "disclaimer": "This tool is an initial technical/name research helper, not legal advice."
 }
 ```
@@ -163,19 +171,17 @@ Example response shape:
 
 ```text
 swiss-business-checker/
-├── index.php
-├── api.php
-├── includes/
-│   ├── config.php
-│   ├── functions.php
-│   └── providers.php
-├── assets/
-│   ├── css/style.css
-│   └── js/script.js
-├── LICENSE
-├── .gitignore
-├── .gitattributes
-└── README.md
+|-- index.php
+|-- api.php
+|-- includes/
+|   |-- config.php
+|   |-- functions.php
+|   `-- providers.php
+|-- assets/
+|   |-- css/style.css
+|   `-- js/script.js
+|-- LICENSE
+`-- README.md
 ```
 
 ## Roadmap
@@ -187,12 +193,13 @@ V2:
 - [x] ZEFIX PublicREST API integration
 - [x] ZEFIX manual fallback link
 - [x] JSON API
+- [x] Short-lived cache and JSON API rate limiting
 - [x] No database
 
 Possible future improvements:
 
 - [ ] Multi-TLD checks: `.ch`, `.com`, `.swiss`, `.io`
-- [ ] Better IDN handling
+- [x] Better IDN handling
 - [ ] Configurable scoring
 - [ ] Optional Swissreg API integration after API access/terms setup
 - [ ] Dockerfile
@@ -208,6 +215,14 @@ Possible future improvements:
 - ZEFIX OpenAPI JSON: https://www.zefix.admin.ch/ZefixPublicREST/v3/api-docs
 
 ## Changelog
+
+### v2.1.0
+
+- Disabled live ZEFIX API requests unless credentials are configured.
+- Added a short-lived cache and JSON API rate limiting.
+- Added confidence reporting and improved IDN domain candidates.
+- Adjusted scoring so manual links do not count as completed checks.
+- Corrected the documented project structure.
 
 ### v2.0.0
 

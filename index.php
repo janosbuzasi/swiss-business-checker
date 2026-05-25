@@ -5,11 +5,18 @@ require __DIR__ . '/includes/functions.php';
 
 $config = sbc_load_config();
 $query = isset($_GET['name']) ? (string) $_GET['name'] : '';
-$result = $query !== '' ? sbc_check_business_name($query) : null;
 
 if (isset($_GET['api']) && $_GET['api'] === '1') {
+    $rateLimit = sbc_rate_limit_check($config, $_SERVER['REMOTE_ADDR'] ?? 'cli');
+    if (!$rateLimit['ok']) {
+        sbc_json_response($rateLimit, 429);
+    }
+
+    $result = $query !== '' ? sbc_check_business_name($query) : null;
     sbc_json_response($result ?? ['ok' => false, 'error' => 'Missing name parameter.'], $result && $result['ok'] ? 200 : 400);
 }
+
+$result = $query !== '' ? sbc_check_business_name($query) : null;
 ?>
 <!doctype html>
 <html lang="en">
@@ -47,7 +54,8 @@ if (isset($_GET['api']) && $_GET['api'] === '1') {
                 <article class="card score-card">
                     <h2>Candidate score</h2>
                     <div class="score"><?= (int) $result['score'] ?><span>/100</span></div>
-                    <p>V2 score uses domain DNS hints, ZEFIX API status and Swissreg manual check availability.</p>
+                    <p>Confidence: <?= sbc_h((string) $result['confidence']) ?><?= !empty($result['cached']) ? ' · cached result' : '' ?></p>
+                    <p>Score uses domain DNS hints and live ZEFIX API status. Swissreg remains a manual check.</p>
                 </article>
 
                 <article class="card">
@@ -57,6 +65,9 @@ if (isset($_GET['api']) && $_GET['api'] === '1') {
                         <?= $result['domain']['available_hint'] ? 'Possibly available' : 'DNS records found' ?>
                     </p>
                     <p><?= sbc_h($result['domain']['note']) ?></p>
+                    <?php if (count($result['domain']['candidates'] ?? []) > 1): ?>
+                        <p>Also check: <?= sbc_h(implode(', ', array_column($result['domain']['candidates'], 'domain'))) ?></p>
+                    <?php endif; ?>
                     <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['official_links']['nic_lookup']) ?>">Open nic.ch lookup</a>
                 </article>
 

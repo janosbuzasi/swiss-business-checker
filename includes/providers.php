@@ -14,6 +14,18 @@ function sbc_zefix_api_search(string $query, array $config): array
         ];
     }
 
+    $username = (string) ($apiConfig['username'] ?? '');
+    $password = (string) ($apiConfig['password'] ?? '');
+    if ($username === '' || $password === '') {
+        return [
+            'status' => 'credentials-required',
+            'success' => false,
+            'matches' => null,
+            'results' => [],
+            'note' => 'ZEFIX PublicREST live lookup requires Basic Auth credentials. Use the official ZEFIX button for manual verification.',
+        ];
+    }
+
     $endpoint = rtrim((string) $config['urls']['zefix_api_base'], '/') . '/api/v1/company/search';
     $payload = [
         'name' => $query,
@@ -23,8 +35,8 @@ function sbc_zefix_api_search(string $query, array $config): array
     $response = sbc_http_post_json(
         $endpoint,
         $payload,
-        (string) ($apiConfig['username'] ?? ''),
-        (string) ($apiConfig['password'] ?? ''),
+        $username,
+        $password,
         (int) ($apiConfig['timeout_seconds'] ?? 6)
     );
 
