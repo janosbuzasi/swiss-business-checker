@@ -83,7 +83,19 @@ The public `includes/config.php` stays generic. For deployment-specific credenti
 includes/config.local.php
 ```
 
-It is ignored by Git and is loaded automatically when present. Example:
+The repository includes a template:
+
+```text
+includes/config.local.example.php
+```
+
+On your server, copy it once:
+
+```bash
+cp includes/config.local.example.php includes/config.local.php
+```
+
+Then fill in your credentials in `includes/config.local.php`. It is ignored by Git and is loaded automatically when present. Example:
 
 ```php
 <?php
@@ -260,6 +272,7 @@ swiss-business-checker/
 |-- api.php
 |-- includes/
 |   |-- config.php
+|   |-- config.local.example.php
 |   |-- config.local.php (optional, ignored by Git)
 |   |-- functions.php
 |   `-- providers.php
@@ -310,6 +323,7 @@ Possible future improvements:
 - Added UID/CHE register card derived from live ZEFIX UID results.
 - Added official UID register links for manual verification.
 - Added UID/CHE data to JSON API output.
+- Added `includes/config.local.example.php` as a template for private server credentials.
 
 ### v2.2.0
 
