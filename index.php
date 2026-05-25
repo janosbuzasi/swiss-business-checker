@@ -100,7 +100,42 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
                     <p><?= sbc_h((string) $result['zefix']['note']) ?></p>
                     <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['zefix']['search_url']) ?>">Open ZEFIX with query</a>
                 </article>
+
+                <article class="card">
+                    <h2>UID / CHE register</h2>
+                    <?php
+                        $uidLight = (string) ($result['uid']['traffic_light'] ?? 'manual');
+                        $uidClass = ['green' => 'good', 'yellow' => 'warn', 'red' => 'bad'][$uidLight] ?? 'manual';
+                        $uidLabel = ['green' => 'One UID found', 'yellow' => 'Multiple UIDs found', 'red' => 'No UID found'][$uidLight] ?? 'Manual check';
+                    ?>
+                    <p class="status <?= sbc_h($uidClass) ?>"><?= sbc_h($uidLabel) ?></p>
+                    <?php if (($result['uid']['matches'] ?? null) !== null): ?>
+                        <p><?= (int) $result['uid']['matches'] ?> UID match<?= ((int) $result['uid']['matches'] === 1) ? '' : 'es' ?></p>
+                    <?php endif; ?>
+                    <p><?= sbc_h((string) $result['uid']['note']) ?></p>
+                    <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['uid']['search_url']) ?>">Open UID register</a>
+                </article>
             </section>
+
+            <?php if (!empty($result['uid']['uids'])): ?>
+                <section class="card full-width">
+                    <h2>UID / CHE results</h2>
+                    <div class="result-list">
+                        <?php foreach ($result['uid']['uids'] as $uid): ?>
+                            <article class="company-row">
+                                <div>
+                                    <strong><?= sbc_h((string) $uid['uid']) ?></strong>
+                                    <p><?= sbc_h((string) ($uid['name'] ?: 'Company name unavailable')) ?></p>
+                                </div>
+                                <div class="company-meta">
+                                    <span><?= sbc_h(trim((string) $uid['legal_seat'] . ' ' . (empty($uid['canton']) ? '' : '(' . $uid['canton'] . ')'))) ?></span>
+                                    <a target="_blank" rel="noopener" href="<?= sbc_h((string) $uid['search_url']) ?>">Verify UID</a>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            <?php endif; ?>
 
             <?php if (($result['swissreg']['success'] ?? false) === true && !empty($result['swissreg']['results'])): ?>
                 <section class="card full-width">

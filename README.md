@@ -16,6 +16,7 @@ The project is intentionally simple and runs on basic PHP web hosting. No databa
 - DNS-based `.ch` domain hint
 - Optional live Swissreg trademark API lookup with traffic-light status
 - Live ZEFIX PublicREST integration via server-side PHP
+- UID/CHE register hints derived from ZEFIX results
 - ZEFIX manual fallback link with query
 - JSON API endpoint
 - Short-lived server-side response cache
@@ -31,6 +32,8 @@ The `.ch` domain check is only a DNS-based hint. Final domain availability must 
 ZEFIX live results are technical API results from the central business name index. Final legally relevant decisions still require official verification.
 
 Swissreg can be checked live when IPI datadelivery API credentials are configured. Similar trade marks, deleted entries, protected terms, cantonal/legal restrictions and industry-specific requirements may still apply.
+
+UID/CHE hints are derived from ZEFIX live results when available and should be verified in the official UID register.
 
 ## Requirements
 
@@ -165,6 +168,7 @@ The tool returns:
 - DNS availability hint
 - Swissreg traffic-light trademark status when API credentials are configured
 - Live ZEFIX API match count and result list when available
+- UID/CHE matches from live ZEFIX results with official UID register links
 - ZEFIX manual fallback button
 - Candidate score
 - Confidence level for the automated checks
@@ -228,6 +232,19 @@ Example response shape:
       }
     ]
   },
+  "uid": {
+    "status": "zefix-derived",
+    "success": true,
+    "traffic_light": "green",
+    "matches": 1,
+    "uids": [
+      {
+        "uid": "CHE-123.456.789",
+        "name": "Elefanten Holding AG",
+        "search_url": "https://www.uid.admin.ch/Search.aspx?lang=de&search=CHE-123.456.789"
+      }
+    ]
+  },
   "score": 75,
   "confidence": "medium",
   "cached": false,
@@ -261,6 +278,7 @@ V2:
 - [x] Swissreg official manual search link
 - [x] Optional Swissreg API traffic-light lookup
 - [x] ZEFIX PublicREST API integration
+- [x] UID/CHE register hints from ZEFIX results
 - [x] ZEFIX manual fallback link
 - [x] JSON API
 - [x] Short-lived cache and JSON API rate limiting
@@ -283,8 +301,15 @@ Possible future improvements:
 - ZEFIX PublicREST API documentation: https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html
 - ZEFIX OpenAPI JSON: https://www.zefix.admin.ch/ZefixPublicREST/v3/api-docs
 - Swissreg API documentation: https://www.swissreg.ch/public/apidocs/singlehtml/index.html
+- UID register: https://www.uid.admin.ch/Search.aspx?lang=de
 
 ## Changelog
+
+### v2.3.0
+
+- Added UID/CHE register card derived from live ZEFIX UID results.
+- Added official UID register links for manual verification.
+- Added UID/CHE data to JSON API output.
 
 ### v2.2.0
 

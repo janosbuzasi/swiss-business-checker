@@ -198,12 +198,65 @@ function sbc_build_search_urls(string $query, array $config): array
     $encoded = rawurlencode($query);
     return [
         'nic_lookup' => $config['urls']['nic_lookup'],
+        'uid' => sprintf($config['urls']['uid_search_with_query'], $encoded),
+        'uid_fallback' => $config['urls']['uid_search'],
         'swissreg' => sprintf($config['urls']['swissreg_ch_trademarks_with_query'], $encoded),
         'swissreg_fallback' => $config['urls']['swissreg_trademarks'],
         'swissreg_api_docs' => $config['urls']['swissreg_api_docs'],
         'zefix' => sprintf($config['urls']['zefix_search_with_query'], $encoded),
         'zefix_fallback' => $config['urls']['zefix_search'],
         'zefix_api_docs' => $config['urls']['zefix_api_docs'],
+    ];
+}
+
+function sbc_uid_summary(array $zefix, array $urls): array
+{
+    if (($zefix['success'] ?? false) !== true) {
+        return [
+            'status' => 'manual-check',
+            'success' => false,
+            'traffic_light' => 'manual',
+            'uids' => [],
+            'matches' => null,
+            'search_url' => $urls['uid'],
+            'fallback_search_url' => $urls['uid_fallback'],
+            'note' => 'UID register can be checked manually. Live UID hints require ZEFIX API results.',
+        ];
+    }
+
+    $uids = [];
+    foreach (($zefix['results'] ?? []) as $company) {
+        $uid = trim((string) ($company['uid'] ?? ''));
+        if ($uid === '') {
+            continue;
+        }
+        $uids[$uid] = [
+            'uid' => $uid,
+            'name' => (string) ($company['name'] ?? ''),
+            'legal_seat' => (string) ($company['legal_seat'] ?? ''),
+            'canton' => (string) ($company['canton'] ?? ''),
+            'status' => (string) ($company['status'] ?? ''),
+            'search_url' => sprintf('https://www.uid.admin.ch/Search.aspx?lang=de&search=%s', rawurlencode($uid)),
+        ];
+    }
+
+    $items = array_values($uids);
+    $count = count($items);
+    $trafficLight = $count === 0 ? 'red' : ($count === 1 ? 'green' : 'yellow');
+
+    return [
+        'status' => 'zefix-derived',
+        'success' => true,
+        'traffic_light' => $trafficLight,
+        'uids' => $items,
+        'matches' => $count,
+        'search_url' => $count === 1 ? $items[0]['search_url'] : $urls['uid'],
+        'fallback_search_url' => $urls['uid_fallback'],
+        'note' => $count === 0
+            ? 'No UID was present in the live ZEFIX results. Check the official UID register manually.'
+            : ($count === 1
+                ? 'One UID was found in the live ZEFIX results. Verify it in the official UID register.'
+                : 'Multiple UIDs were found in the live ZEFIX results. Review the official UID register before deciding.'),
     ];
 }
 
@@ -274,6 +327,7 @@ function sbc_check_business_name(string $input): array
     $urls = sbc_build_search_urls($query, $config);
     $swissreg = sbc_swissreg_api_search($query, $config);
     $zefix = sbc_zefix_api_search($query, $config);
+    $uid = sbc_uid_summary($zefix, $urls);
 
     $result = [
         'ok' => true,
@@ -291,6 +345,7 @@ function sbc_check_business_name(string $input): array
             'fallback_search_url' => $urls['zefix_fallback'],
             'api_docs_url' => $urls['zefix_api_docs'],
         ]),
+        'uid' => $uid,
         'official_links' => $urls,
         'score' => sbc_score($domainHint, $swissreg, $zefix),
         'confidence' => sbc_confidence($swissreg, $zefix),

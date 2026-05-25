@@ -11,12 +11,14 @@ declare(strict_types=1);
 
 $config = [
     'app_name' => 'Swiss Business Checker',
-    'app_version' => '2.2.0',
+    'app_version' => '2.3.0',
 
     'tlds' => ['ch'],
 
     'urls' => [
         'nic_lookup' => 'https://www.nic.ch/whois/',
+        'uid_search' => 'https://www.uid.admin.ch/Search.aspx?lang=de',
+        'uid_search_with_query' => 'https://www.uid.admin.ch/Search.aspx?lang=de&search=%s',
         'swissreg_trademarks' => 'https://www.swissreg.ch/database-client/search/query/trademarks',
         'swissreg_ch_trademarks_with_query' => 'https://www.swissreg.ch/database-client/search/query/chmarke?q=%s',
         'swissreg_api_base' => 'https://www.swissreg.ch/public/api/v1',
