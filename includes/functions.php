@@ -198,7 +198,8 @@ function sbc_build_search_urls(string $query, array $config): array
     $encoded = rawurlencode($query);
     return [
         'nic_lookup' => $config['urls']['nic_lookup'],
-        'swissreg' => $config['urls']['swissreg_trademarks'],
+        'swissreg' => sprintf($config['urls']['swissreg_ch_trademarks_with_query'], $encoded),
+        'swissreg_fallback' => $config['urls']['swissreg_trademarks'],
         'swissreg_api_docs' => $config['urls']['swissreg_api_docs'],
         'zefix' => sprintf($config['urls']['zefix_search_with_query'], $encoded),
         'zefix_fallback' => $config['urls']['zefix_search'],
@@ -282,6 +283,7 @@ function sbc_check_business_name(string $input): array
         'domain' => $domainHint,
         'swissreg' => array_merge($swissreg, [
             'search_url' => $urls['swissreg'],
+            'fallback_search_url' => $urls['swissreg_fallback'],
             'api_docs_url' => $urls['swissreg_api_docs'],
         ]),
         'zefix' => array_merge($zefix, [

@@ -82,10 +82,10 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
                         <p class="status <?= sbc_h($swissregClass) ?>"><?= sbc_h($swissregLabel) ?></p>
                         <p><?= (int) $result['swissreg']['matches'] ?> Swissreg match<?= ((int) $result['swissreg']['matches'] === 1) ? '' : 'es' ?></p>
                     <?php else: ?>
-                        <p class="status manual">Manual check</p>
+                        <p class="status manual">Live API inactive</p>
                     <?php endif; ?>
                     <p><?= sbc_h((string) $result['swissreg']['note']) ?></p>
-                    <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['swissreg']['search_url']) ?>">Open Swissreg search</a>
+                    <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['swissreg']['search_url']) ?>">Open Swissreg CH-Marke search</a>
                 </article>
 
                 <article class="card">

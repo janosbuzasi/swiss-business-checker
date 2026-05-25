@@ -18,6 +18,7 @@ return [
     'urls' => [
         'nic_lookup' => 'https://www.nic.ch/whois/',
         'swissreg_trademarks' => 'https://www.swissreg.ch/database-client/search/query/trademarks',
+        'swissreg_ch_trademarks_with_query' => 'https://www.swissreg.ch/database-client/search/query/chmarke?q=%s',
         'swissreg_api_base' => 'https://www.swissreg.ch/public/api/v1',
         'swissreg_token_endpoint' => 'https://idp.ipi.ch/auth/realms/egov/protocol/openid-connect/token',
         'swissreg_api_docs' => 'https://www.swissreg.ch/public/apidocs/singlehtml/index.html',

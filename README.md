@@ -93,7 +93,7 @@ export SWISSREG_API_USERNAME="your-user"
 export SWISSREG_API_PASSWORD="your-password"
 ```
 
-Without credentials, the app keeps the official manual Swissreg search link.
+Without credentials, the app keeps a direct official Swissreg CH-Marke search link with the entered query.
 
 ## Installation
 
@@ -255,6 +255,7 @@ Possible future improvements:
 - Added optional Swissreg live API lookup via IPI datadelivery credentials.
 - Added Swissreg traffic-light status for no matches, deleted/unclear entries, and active/pending entries.
 - Added Swissreg result cards with status and detail links.
+- Changed the manual Swissreg fallback to open the entered query directly in CH-Marke search.
 
 ### v2.1.0
 
