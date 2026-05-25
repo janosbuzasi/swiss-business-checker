@@ -9,7 +9,7 @@ declare(strict_types=1);
  * provide a stable unauthenticated query URL for simple link-based searches.
  */
 
-return [
+$config = [
     'app_name' => 'Swiss Business Checker',
     'app_version' => '2.2.0',
 
@@ -71,3 +71,25 @@ return [
         'directory' => sys_get_temp_dir() . '/swiss-business-checker-rate-limit',
     ],
 ];
+
+$localConfigFile = __DIR__ . '/config.local.php';
+if (is_file($localConfigFile)) {
+    /** @var array $localConfig */
+    $localConfig = require $localConfigFile;
+    if (is_array($localConfig)) {
+        $mergeConfig = static function (array $base, array $override) use (&$mergeConfig): array {
+            foreach ($override as $key => $value) {
+                if (is_array($value) && isset($base[$key]) && is_array($base[$key])) {
+                    $base[$key] = $mergeConfig($base[$key], $value);
+                    continue;
+                }
+                $base[$key] = $value;
+            }
+            return $base;
+        };
+
+        $config = $mergeConfig($config, $localConfig);
+    }
+}
+
+return $config;

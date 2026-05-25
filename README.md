@@ -72,6 +72,41 @@ export ZEFIX_API_ENABLED=false
 
 Without credentials, the app keeps working with manual ZEFIX links and does not attempt a live API request.
 
+## Private local config
+
+The public `includes/config.php` stays generic. For deployment-specific credentials, create this file on your web server:
+
+```text
+includes/config.local.php
+```
+
+It is ignored by Git and is loaded automatically when present. Example:
+
+```php
+<?php
+return [
+    'swissreg_api' => [
+        'enabled' => true,
+        'refresh_token' => 'your-refresh-token',
+    ],
+];
+```
+
+You can also use it for username/password credentials:
+
+```php
+<?php
+return [
+    'swissreg_api' => [
+        'enabled' => true,
+        'username' => 'your-user',
+        'password' => 'your-password',
+    ],
+];
+```
+
+Do not commit `includes/config.local.php`. It is meant to exist only on your server or local machine.
+
 ## Optional Swissreg API credentials
 
 Swissreg live lookups use the official IPI datadelivery API:
@@ -154,7 +189,7 @@ Example response shape:
 ```json
 {
   "ok": true,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "query": "elefanten",
   "normalized_domain_label": "elefanten",
   "domain": {
@@ -208,6 +243,7 @@ swiss-business-checker/
 |-- api.php
 |-- includes/
 |   |-- config.php
+|   |-- config.local.php (optional, ignored by Git)
 |   |-- functions.php
 |   `-- providers.php
 |-- assets/
@@ -256,6 +292,7 @@ Possible future improvements:
 - Added Swissreg traffic-light status for no matches, deleted/unclear entries, and active/pending entries.
 - Added Swissreg result cards with status and detail links.
 - Changed the manual Swissreg fallback to open the entered query directly in CH-Marke search.
+- Added optional ignored `includes/config.local.php` for private deployment credentials.
 
 ### v2.1.0
 
