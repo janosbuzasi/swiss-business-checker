@@ -14,7 +14,7 @@ The project is intentionally simple and runs on basic PHP web hosting. No databa
 - Clean responsive UI
 - PHP-only implementation
 - DNS-based `.ch` domain hint
-- Official Swissreg manual search link
+- Optional live Swissreg trademark API lookup with traffic-light status
 - Live ZEFIX PublicREST integration via server-side PHP
 - ZEFIX manual fallback link with query
 - JSON API endpoint
@@ -30,7 +30,7 @@ The `.ch` domain check is only a DNS-based hint. Final domain availability must 
 
 ZEFIX live results are technical API results from the central business name index. Final legally relevant decisions still require official verification.
 
-Swissreg remains a manual trade mark check in V2. Similar trade marks, name conflicts, protected terms, cantonal/legal restrictions and industry-specific requirements may still apply.
+Swissreg can be checked live when IPI datadelivery API credentials are configured. Similar trade marks, deleted entries, protected terms, cantonal/legal restrictions and industry-specific requirements may still apply.
 
 ## Requirements
 
@@ -72,6 +72,29 @@ export ZEFIX_API_ENABLED=false
 
 Without credentials, the app keeps working with manual ZEFIX links and does not attempt a live API request.
 
+## Optional Swissreg API credentials
+
+Swissreg live lookups use the official IPI datadelivery API:
+
+```text
+https://www.swissreg.ch/public/api/v1
+```
+
+Configure either a refresh token:
+
+```bash
+export SWISSREG_API_REFRESH_TOKEN="your-refresh-token"
+```
+
+or username/password credentials:
+
+```bash
+export SWISSREG_API_USERNAME="your-user"
+export SWISSREG_API_PASSWORD="your-password"
+```
+
+Without credentials, the app keeps the official manual Swissreg search link.
+
 ## Installation
 
 Clone the repository:
@@ -105,7 +128,7 @@ The tool returns:
 
 - Normalized `.ch` domain candidate
 - DNS availability hint
-- Swissreg search button
+- Swissreg traffic-light trademark status when API credentials are configured
 - Live ZEFIX API match count and result list when available
 - ZEFIX manual fallback button
 - Candidate score
@@ -142,8 +165,18 @@ Example response shape:
     "status": "possibly-available"
   },
   "swissreg": {
-    "status": "manual-check",
-    "search_url": "https://www.swissreg.ch/database-client/search/query/trademarks"
+    "status": "live-api",
+    "matches": 1,
+    "traffic_light": "yellow",
+    "results": [
+      {
+        "name": "PECHE-MIGNON",
+        "registration_number": "1100370641",
+        "status": "Gelöscht",
+        "status_kind": "deleted",
+        "detail_url": "https://www.swissreg.ch/database-client/register/detail/trademark/1100370641"
+      }
+    ]
   },
   "zefix": {
     "status": "live-api",
@@ -190,6 +223,7 @@ V2:
 
 - [x] `.ch` DNS hint
 - [x] Swissreg official manual search link
+- [x] Optional Swissreg API traffic-light lookup
 - [x] ZEFIX PublicREST API integration
 - [x] ZEFIX manual fallback link
 - [x] JSON API
@@ -201,7 +235,6 @@ Possible future improvements:
 - [ ] Multi-TLD checks: `.ch`, `.com`, `.swiss`, `.io`
 - [x] Better IDN handling
 - [ ] Configurable scoring
-- [ ] Optional Swissreg API integration after API access/terms setup
 - [ ] Dockerfile
 - [ ] GitHub Actions PHP linting
 - [ ] Screenshots and demo page
@@ -213,8 +246,15 @@ Possible future improvements:
 - ZEFIX official search: https://www.zefix.admin.ch/de/search/entity/welcome
 - ZEFIX PublicREST API documentation: https://www.zefix.admin.ch/ZefixPublicREST/swagger-ui/index.html
 - ZEFIX OpenAPI JSON: https://www.zefix.admin.ch/ZefixPublicREST/v3/api-docs
+- Swissreg API documentation: https://www.swissreg.ch/public/apidocs/singlehtml/index.html
 
 ## Changelog
+
+### v2.2.0
+
+- Added optional Swissreg live API lookup via IPI datadelivery credentials.
+- Added Swissreg traffic-light status for no matches, deleted/unclear entries, and active/pending entries.
+- Added Swissreg result cards with status and detail links.
 
 ### v2.1.0
 

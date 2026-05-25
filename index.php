@@ -73,8 +73,18 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
 
                 <article class="card">
                     <h2>Swissreg trade marks</h2>
-                    <p>Open the official Swissreg trade mark database and search for identical or similar marks.</p>
-                    <p class="status manual">Manual check</p>
+                    <?php if (($result['swissreg']['success'] ?? false) === true): ?>
+                        <?php
+                            $swissregLight = (string) ($result['swissreg']['traffic_light'] ?? 'yellow');
+                            $swissregClass = ['green' => 'good', 'yellow' => 'warn', 'red' => 'bad'][$swissregLight] ?? 'manual';
+                            $swissregLabel = ['green' => 'No matches found', 'yellow' => 'Deleted/unclear entries found', 'red' => 'Active or pending entries found'][$swissregLight] ?? 'Manual check';
+                        ?>
+                        <p class="status <?= sbc_h($swissregClass) ?>"><?= sbc_h($swissregLabel) ?></p>
+                        <p><?= (int) $result['swissreg']['matches'] ?> Swissreg match<?= ((int) $result['swissreg']['matches'] === 1) ? '' : 'es' ?></p>
+                    <?php else: ?>
+                        <p class="status manual">Manual check</p>
+                    <?php endif; ?>
+                    <p><?= sbc_h((string) $result['swissreg']['note']) ?></p>
                     <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['swissreg']['search_url']) ?>">Open Swissreg search</a>
                 </article>
 
@@ -91,6 +101,33 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
                     <a class="button-link" target="_blank" rel="noopener" href="<?= sbc_h($result['zefix']['search_url']) ?>">Open ZEFIX with query</a>
                 </article>
             </section>
+
+            <?php if (($result['swissreg']['success'] ?? false) === true && !empty($result['swissreg']['results'])): ?>
+                <section class="card full-width">
+                    <h2>Swissreg live results</h2>
+                    <div class="result-list">
+                        <?php foreach (array_slice($result['swissreg']['results'], 0, (int) $config['swissreg_api']['max_ui_results']) as $trademark): ?>
+                            <article class="company-row">
+                                <div>
+                                    <strong><?= sbc_h((string) ($trademark['name'] ?: 'Trademark name unavailable')) ?></strong>
+                                    <p>
+                                        <?= sbc_h((string) ($trademark['registration_number'] ?: 'Registration number unavailable')) ?>
+                                        <?php if (!empty($trademark['owner'])): ?> · <?= sbc_h((string) $trademark['owner']) ?><?php endif; ?>
+                                    </p>
+                                </div>
+                                <div class="company-meta">
+                                    <span class="status <?= (($trademark['status_kind'] ?? '') === 'active' || ($trademark['status_kind'] ?? '') === 'pending') ? 'bad' : ((($trademark['status_kind'] ?? '') === 'deleted') ? 'warn' : 'manual') ?>">
+                                        <?= sbc_h((string) (($trademark['status_label'] ?? '') ?: ($trademark['status'] ?? '') ?: 'Status unclear')) ?>
+                                    </span>
+                                    <?php if (!empty($trademark['detail_url'])): ?>
+                                        <a target="_blank" rel="noopener" href="<?= sbc_h((string) $trademark['detail_url']) ?>">Open entry</a>
+                                    <?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            <?php endif; ?>
 
             <?php if (($result['zefix']['success'] ?? false) === true && !empty($result['zefix']['results'])): ?>
                 <section class="card full-width">

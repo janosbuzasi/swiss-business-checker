@@ -11,13 +11,16 @@ declare(strict_types=1);
 
 return [
     'app_name' => 'Swiss Business Checker',
-    'app_version' => '2.1.0',
+    'app_version' => '2.2.0',
 
     'tlds' => ['ch'],
 
     'urls' => [
         'nic_lookup' => 'https://www.nic.ch/whois/',
         'swissreg_trademarks' => 'https://www.swissreg.ch/database-client/search/query/trademarks',
+        'swissreg_api_base' => 'https://www.swissreg.ch/public/api/v1',
+        'swissreg_token_endpoint' => 'https://idp.ipi.ch/auth/realms/egov/protocol/openid-connect/token',
+        'swissreg_api_docs' => 'https://www.swissreg.ch/public/apidocs/singlehtml/index.html',
         'zefix_search' => 'https://www.zefix.admin.ch/de/search/entity/welcome',
         'zefix_search_with_query' => 'https://www.zefix.admin.ch/de/search/entity/list?mainSearch=%s&searchTypeExact=true',
         'zefix_api_base' => 'https://www.zefix.admin.ch/ZefixPublicREST',
@@ -38,6 +41,19 @@ return [
         'password' => getenv('ZEFIX_API_PASSWORD') ?: '',
         'timeout_seconds' => 6,
         'active_only' => true,
+        'max_ui_results' => 10,
+    ],
+
+    'swissreg_api' => [
+        'enabled' => filter_var(
+            getenv('SWISSREG_API_ENABLED') ?: ((getenv('SWISSREG_API_REFRESH_TOKEN') || (getenv('SWISSREG_API_USERNAME') && getenv('SWISSREG_API_PASSWORD'))) ? 'true' : 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        ),
+        'client_id' => getenv('SWISSREG_API_CLIENT_ID') ?: 'datadelivery-api-client',
+        'username' => getenv('SWISSREG_API_USERNAME') ?: '',
+        'password' => getenv('SWISSREG_API_PASSWORD') ?: '',
+        'refresh_token' => getenv('SWISSREG_API_REFRESH_TOKEN') ?: '',
+        'timeout_seconds' => 8,
         'max_ui_results' => 10,
     ],
 

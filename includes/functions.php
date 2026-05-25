@@ -199,17 +199,27 @@ function sbc_build_search_urls(string $query, array $config): array
     return [
         'nic_lookup' => $config['urls']['nic_lookup'],
         'swissreg' => $config['urls']['swissreg_trademarks'],
+        'swissreg_api_docs' => $config['urls']['swissreg_api_docs'],
         'zefix' => sprintf($config['urls']['zefix_search_with_query'], $encoded),
         'zefix_fallback' => $config['urls']['zefix_search'],
         'zefix_api_docs' => $config['urls']['zefix_api_docs'],
     ];
 }
 
-function sbc_score(array $domainHint, array $zefix): int
+function sbc_score(array $domainHint, array $swissreg, array $zefix): int
 {
     $score = 20;
     if (($domainHint['available_hint'] ?? false) === true) {
         $score += 30;
+    }
+
+    if (($swissreg['success'] ?? false) === true) {
+        $trafficLight = (string) ($swissreg['traffic_light'] ?? 'yellow');
+        if ($trafficLight === 'green') {
+            $score += 30;
+        } elseif ($trafficLight === 'yellow') {
+            $score += 8;
+        }
     }
 
     if (($zefix['success'] ?? false) === true) {
@@ -223,13 +233,15 @@ function sbc_score(array $domainHint, array $zefix): int
         }
     }
 
-    $score += 5; // Swissreg manual link is helpful, but it is not an automated clearance check.
     return min(100, max(0, $score));
 }
 
-function sbc_confidence(array $zefix): string
+function sbc_confidence(array $swissreg, array $zefix): string
 {
-    if (($zefix['success'] ?? false) === true) {
+    if (($swissreg['success'] ?? false) === true && ($zefix['success'] ?? false) === true) {
+        return 'high';
+    }
+    if (($swissreg['success'] ?? false) === true || ($zefix['success'] ?? false) === true) {
         return 'medium';
     }
     return 'low';
@@ -259,6 +271,7 @@ function sbc_check_business_name(string $input): array
     $domainHint = sbc_domain_hint((string) $domainCandidates[0]['domain']);
     $domainHint['candidates'] = $domainCandidates;
     $urls = sbc_build_search_urls($query, $config);
+    $swissreg = sbc_swissreg_api_search($query, $config);
     $zefix = sbc_zefix_api_search($query, $config);
 
     $result = [
@@ -267,19 +280,18 @@ function sbc_check_business_name(string $input): array
         'query' => $query,
         'normalized_domain_label' => $slug,
         'domain' => $domainHint,
-        'swissreg' => [
-            'status' => 'manual-check',
+        'swissreg' => array_merge($swissreg, [
             'search_url' => $urls['swissreg'],
-            'note' => 'Swissreg is linked as an official manual trade mark check. Similar marks may still create conflicts.',
-        ],
+            'api_docs_url' => $urls['swissreg_api_docs'],
+        ]),
         'zefix' => array_merge($zefix, [
             'search_url' => $urls['zefix'],
             'fallback_search_url' => $urls['zefix_fallback'],
             'api_docs_url' => $urls['zefix_api_docs'],
         ]),
         'official_links' => $urls,
-        'score' => sbc_score($domainHint, $zefix),
-        'confidence' => sbc_confidence($zefix),
+        'score' => sbc_score($domainHint, $swissreg, $zefix),
+        'confidence' => sbc_confidence($swissreg, $zefix),
         'cached' => false,
         'disclaimer' => 'This tool is an initial technical/name research helper, not legal advice.',
     ];
