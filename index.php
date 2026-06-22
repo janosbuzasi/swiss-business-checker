@@ -25,12 +25,22 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
     <title><?= sbc_h($config['app_name']) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Check Swiss business name candidates against .ch domain hints, Swissreg and live ZEFIX API results.">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+<nav class="site-nav">
+    <div class="nav-container">
+        <a class="site-brand" href="/">
+            <span class="brand-mark" aria-hidden="true">WT</span>
+            <span>webtrash.ch</span>
+        </a>
+        <span class="app-name"><?= sbc_h($config['app_name']) ?></span>
+    </div>
+</nav>
 <main class="page">
     <section class="hero">
-        <div class="badge">🇨🇭 V<?= sbc_h($config['app_version']) ?></div>
+        <div class="badge">CH / V<?= sbc_h($config['app_version']) ?></div>
         <h1>Swiss Business Checker</h1>
         <p>Check Swiss business name candidates against domain hints, Swissreg trade mark search and live ZEFIX company register data.</p>
 

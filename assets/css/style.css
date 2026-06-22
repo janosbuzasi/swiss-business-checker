@@ -6,8 +6,10 @@
     --muted: #5f6b7a;
     --card: #ffffff;
     --border: #d8dee8;
-    --accent: #d52b1e;
-    --accent-dark: #a61f16;
+    --accent: #0d6efd;
+    --accent-dark: #0a58ca;
+    --nav: #212529;
+    --danger: #c62828;
     --good: #177245;
     --warn: #9a6700;
 }
@@ -17,6 +19,47 @@ body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
+}
+
+.site-nav {
+    background: var(--nav);
+    color: #ffffff;
+}
+
+.nav-container {
+    display: flex;
+    width: min(1100px, calc(100% - 32px));
+    min-height: 62px;
+    margin: 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.brand-mark {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.app-name {
+    color: #adb5bd;
+    font-size: 0.92rem;
 }
 
 .page {
@@ -128,7 +171,7 @@ button:hover, .button-link:hover { background: var(--accent-dark); }
 .status { font-weight: 900; }
 .status.good { color: var(--good); }
 .status.warn { color: var(--warn); }
-.status.bad { color: var(--accent); }
+.status.bad { color: var(--danger); }
 .status.manual { color: var(--muted); }
 
 .api-card code {
@@ -154,6 +197,7 @@ button:hover, .button-link:hover { background: var(--accent-dark); }
         display: grid;
     }
     .input-row { gap: 12px; }
+    .app-name { display: none; }
 }
 
 .full-width {
