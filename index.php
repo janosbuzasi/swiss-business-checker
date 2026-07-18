@@ -55,6 +55,7 @@ $result = $query !== '' ? sbc_check_business_name($query) : null;
                     <li><a href="/swiss-business-checker/">Swiss Business Checker</a></li>
                     <li><a href="/cnc/">Mini CNC Studio</a></li>
                     <li><a href="/tracks/">Tracks</a></li>
+                    <li><a href="/bitcoin-dashboard/">Bitcoin Dashboard</a></li>
                 </ul>
             </li>
             <li><a href="/about_us.php">About us</a></li>
